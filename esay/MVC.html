@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<div app>
+        <input model="yourname" type="text"/>
+        <input model="hername" type="text"/>
+        <p>{{yourname}}</p>
+        <p>{{yourname}}</p>
+        <p>{{hername}}</p>
+    </div>
+</body>
+<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+	var me = {
+		scope:{},//作用域对象;
+		init:function(){
+			this.htmlStr = document.body.html;
+			// 核心对象;
+			this.app = $("[app]").get(0);
+			// module对象;
+			this.module = $(this.app).find("[model]").get();
+			for(let inpt of this.module){
+				//判定 input 输入框;
+				if(inpt.nodeName === "INPUT" && inpt.type == "text"){
+					let moduleName = inpt.getAttribute("model");
+					//通过选择器获取视图元素;
+					let vm = {
+						//此处通过选择器选中两个元素;
+							//1. {{moduleName为 yourname}};
+							//2. {{moduleName为 herName}};
+						viewList : $(this.app).find(":contains({{"+moduleName+"}})").get()
+					}
+					//添加改变监听;
+				    Object.defineProperty(vm, "value", {
+                        configurable: true,
+                        enumerable: true,
+                        set : function(val){
+                            $(this.viewList).each(function(){
+                                $(this).html(val);                                   
+                            });
+                        }
+                    });
+                    //把更改后的 vm放进 scope之中储存; 
+					this.scope[moduleName] = vm;
+				}
+			}
+			$("input").on("input",function(){
+				me.scope[this.getAttribute("model")].value = this.value;
+			})
+		}
+	}
+	$(function(){
+		me.init();
+	})
+</script>
+</html>
